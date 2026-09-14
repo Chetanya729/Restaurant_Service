@@ -21,8 +21,15 @@ public class Order{
 
     @Override
     public String toString() {
-         return "Order-" + orderId + ": " + Item.getLabel() + " x" + quantity
-                + (priority == Priority.VIP ? " [VIP]" : "");
+         return "Order-" + orderId;
+    }
+
+    public String vipTag() {
+        return priority == Priority.VIP ? " [VIP]" : "";
+    }
+
+    public String details() {
+        return this + ": " + Item.getLabel() + " x" + quantity + vipTag();
     }
 
     public int getOrderId() {return orderId;}
