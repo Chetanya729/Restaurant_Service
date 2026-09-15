@@ -13,12 +13,12 @@ public class Main {
         private static final int Waiters = 2;
         private static final int Customers = 10;
 
-    static void main() throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException {
 
         Inventory inventory = new Inventory();
 
         BlockingQueue<Order> orderQueue = new PriorityBlockingQueue<>(20,
-                Comparator.comparing(Order::getPriority).thenComparing(Order::getOrderId));
+                Comparator.comparing(Order::getPriority).thenComparingInt(Order::getOrderId));
 
         BlockingQueue<Order> completedOrderQueue = new LinkedBlockingQueue<>();
 

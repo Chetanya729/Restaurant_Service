@@ -37,7 +37,6 @@ public class Chef implements Runnable {
         order.setStatus(OrderStatus.PREPARING);
         boolean reserved = inventory.reserve(order.getItem(), order.getQuantity());
 
-        // one println per block so another chef's lines can't land in the middle
         String header = name + " picked " + order + order.vipTag() + System.lineSeparator()
                 + name + " checking inventory for " + order.getItem().getLabel() + " x" + order.getQuantity()
                 + System.lineSeparator();
