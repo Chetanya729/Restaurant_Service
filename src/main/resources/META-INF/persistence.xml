@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd"
+             version="3.2">
+
+    <persistence-unit name="restaurant" transaction-type="RESOURCE_LOCAL">
+        <class>org.example.Entity.InventoryEntity</class>
+        <class>org.example.Entity.OrderRecord</class>
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+
+        <properties>
+            <!-- H2 file database in ./data; AUTO_SERVER lets the IDE's database tool connect while the app runs -->
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:./data/restaurant;AUTO_SERVER=TRUE"/>
+            <property name="jakarta.persistence.jdbc.user" value="sa"/>
+            <property name="jakarta.persistence.jdbc.password" value=""/>
+
+            <!-- recreate tables on every run (learning setup; use "validate" or migrations for real data) -->
+            <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+
+            <!-- 10 customers + 3 chefs + 2 waiters can need a connection at the same moment -->
+            <property name="hibernate.hikari.maximumPoolSize" value="15"/>
+
+            <!-- set to true to see the SQL Hibernate generates -->
+            <property name="hibernate.show_sql" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>
