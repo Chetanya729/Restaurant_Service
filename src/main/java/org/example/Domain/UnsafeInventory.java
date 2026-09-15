@@ -17,7 +17,7 @@ public class UnsafeInventory {
         int available = stock.get(Item);
         if(available>=quantity) {
             try {
-                Thread.sleep(1); // widen the gap between check and deduct so the race shows up
+                Thread.sleep(1);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
