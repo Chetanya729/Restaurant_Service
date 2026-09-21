@@ -27,4 +27,13 @@ public class OrderRepo {
     public List<OrderRecord> findAll(){
         return emf.callInTransaction(em->em.createQuery("SELECT o FROM OrderRecord o ORDER BY o.orderId", OrderRecord.class).getResultList());
     }
+
+    /** First free order id: continues after the highest id already stored, or 101 on an empty table. */
+    public int nextOrderId(){
+        // MAX() on an empty table returns a single null row, so read the list instead of a stream
+        List<Integer> result = emf.callInTransaction(em->em.createQuery("SELECT MAX(o.orderId) FROM OrderRecord o", Integer.class)
+                .getResultList());
+        Integer highest = result.isEmpty() ? null : result.get(0);
+        return highest == null ? 101 : highest + 1;
+    }
 }
