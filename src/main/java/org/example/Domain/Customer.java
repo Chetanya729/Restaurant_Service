@@ -12,21 +12,21 @@ public class Customer implements Runnable{
     private final int quantity;
     private final Priority priority;
     private final BlockingQueue<Order> queue;
-    private final CountDownLatch ordersPlaced;
+//    private final CountDownLatch ordersPlaced;
     private final OrderRepo orderRepo;
 
     private boolean delivered = false;
 
 
     public Customer(String customerId, int orderId, Priority priority, int quantity, MenuItems item,
-                    BlockingQueue<Order> queue, CountDownLatch ordersPlaced, OrderRepo orderRepo) {
+                    BlockingQueue<Order> queue, OrderRepo orderRepo) {
         this.customerId = customerId;
         this.orderId = orderId;
         this.priority = priority;
         this.quantity = quantity;
         this.Item = item;
         this.queue = queue;
-        this.ordersPlaced = ordersPlaced;
+//        this.ordersPlaced = ordersPlaced;
         this.orderRepo = orderRepo;
     }
 
@@ -40,7 +40,7 @@ public class Customer implements Runnable{
             orderRepo.save(order);
             queue.put(order);
             System.out.println(customerId + " placed " + order.details());
-            ordersPlaced.countDown();
+
             waitForDelivery();
 
             if (order.getStatus() == OrderStatus.OUT_OF_STOCK) {
