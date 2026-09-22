@@ -7,7 +7,6 @@
     <persistence-unit name="restaurant" transaction-type="RESOURCE_LOCAL">
         <class>org.example.Entity.InventoryEntity</class>
         <class>org.example.Entity.OrderRecord</class>
-        <class>org.example.Entity.StaffMember</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
         <properties>
@@ -16,14 +15,14 @@
             <property name="jakarta.persistence.jdbc.user" value="sa"/>
             <property name="jakarta.persistence.jdbc.password" value=""/>
 
-            <!-- keep data between runs so hired staff and past orders survive a restart -->
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <!-- recreate tables on every run (learning setup; use "validate" or migrations for real data) -->
+            <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
 
-            <!-- 10 customers + chefs + waiters can need a connection at the same moment -->
+            <!-- 10 customers + 3 chefs + 2 waiters can need a connection at the same moment -->
             <property name="hibernate.hikari.maximumPoolSize" value="15"/>
 
             <!-- set to true to see the SQL Hibernate generates -->
-            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.show_sql" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>
