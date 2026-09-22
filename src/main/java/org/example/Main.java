@@ -101,7 +101,7 @@ public class Main {
         {
             System.out.println("  " + item.getLabel() + ": " + inventory.getStock(item));
         }
-
+        //ygfghyfghbfcffygvghh.sdkjdaklfjhdselkf
         System.out.println("\nOrders (from database)");
         System.out.printf("  %-4s %-12s %-9s %-7s %-13s %-7s %-9s%n",
                 "ID", "Customer", "Item", "Prio", "Status", "Chef", "Waiter");
