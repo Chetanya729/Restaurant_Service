@@ -18,8 +18,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:6.1.2"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation(libs.org.hibernate.hibernate.core)
     implementation(libs.org.hibernate.orm.hibernate.hikaricp)
@@ -28,7 +27,11 @@ dependencies {
 }
 
 application {
-    mainClass = "org.example.Main"
+    mainClass = "org.example.Restaurant"
+}
+
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
 }
 
 tasks.register<JavaExec>("runHello") {
@@ -45,24 +48,7 @@ tasks.register<JavaExec>("runRaceDemo") {
     classpath = sourceSets["main"].runtimeClasspath
 }
 
-tasks.register<JavaExec>("runDemo") {
-    group = "application"
-    description = "Runs the 10-customer demo without the interactive menu"
-    mainClass = "org.example.Main"
-    classpath = sourceSets["main"].runtimeClasspath
-    args("--demo")
-}
-
-tasks.named<JavaExec>("run") {
-    // the menu reads from the console
-    doFirst { standardInput = System.`in` }
-}
-
-tasks.test {
-    useJUnitPlatform()
-    testLogging { events("passed", "failed", "skipped") }
-}
-
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 }
+tasks.test { useJUnitPlatform() }

@@ -5,9 +5,16 @@ import org.example.Domain.Order;
 import org.example.Domain.OrderStatus;
 import org.example.Entity.OrderRecord;
 
+import java.sql.*;
 import java.util.List;
 
 public class OrderRepo {
+
+
+    String url = "";
+    String username="";
+    String  password = "";
+
     private final EntityManagerFactory emf;
 
     public OrderRepo(EntityManagerFactory emf) {
@@ -27,13 +34,22 @@ public class OrderRepo {
     public List<OrderRecord> findAll(){
         return emf.callInTransaction(em->em.createQuery("SELECT o FROM OrderRecord o ORDER BY o.orderId", OrderRecord.class).getResultList());
     }
+    public void createUser() throws SQLException {
+        String sql = "INSERT INTO users (name, email) VALUES ('John Doe', 'john.doe@example.com')";
+        Connection conn = DriverManager.getConnection(url,username, password);
 
-    /** First free order id: continues after the highest id already stored, or 101 on an empty table. */
-    public int nextOrderId(){
-        // MAX() on an empty table returns a single null row, so read the list instead of a stream
-        List<Integer> result = emf.callInTransaction(em->em.createQuery("SELECT MAX(o.orderId) FROM OrderRecord o", Integer.class)
-                .getResultList());
-        Integer highest = result.isEmpty() ? null : result.get(0);
-        return highest == null ? 101 : highest + 1;
+        try
+        {
+            Statement statement = conn.createStatement();
+            ResultSet rs = statement.executeQuery(sql);
+            while (rs.next()){
+                System.out.println(rs.getString("name"));
+            }
+            statement.execute(sql);
+
+        }catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
     }
 }

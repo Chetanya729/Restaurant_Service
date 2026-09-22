@@ -2,7 +2,6 @@ package org.example.Domain;
 import org.example.Repository.OrderRepo;
 
 import java.util.concurrent.BlockingQueue;
-
 public class Customer implements Runnable{
 
     private final String customerId;
