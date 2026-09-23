@@ -52,13 +52,27 @@ public class Restaurant {
     private final List<Thread> customerThreads = Collections.synchronizedList(new ArrayList<>());
 
 
-    public synchronized void chefNamesAdd(String name) {
-        chefNames.add(name);
+    public synchronized boolean chefNamesAdd(String name) {
+        if(status == Status.OPEN) {
+            System.out.println("Chefs can't be added as the restaurant is already open");
+            return false;
+        }
+        String clean = name.trim();
+        if (clean.isEmpty() || isTaken(clean)){
+            return false;
+        }
+        chefNames.add(clean);
         System.out.println("Hired chef: " + name + " (chefs: " + chefNames.size() + ")");
+        return true;
     }
-    public synchronized void waiterNamesAdd(String name) {
+    public synchronized boolean waiterNamesAdd(String name) {
+        String clean = name.trim();
+        if (clean.isEmpty() || isTaken(clean)){
+            return false;
+        }
         waiterNames.add(name);
         System.out.println("Hired waiter: " + name + " (waiters: " + waiterNames.size() + ")");
+        return true;
     }
 
     public synchronized boolean isOpen() {
@@ -128,9 +142,14 @@ public class Restaurant {
             emf.close();
         }
     }
+    public synchronized boolean isTaken(String name){
+        return chefNames.stream().anyMatch(chef->chef.equalsIgnoreCase(name))||waiterNames.stream().anyMatch(waiter->waiter.equalsIgnoreCase(name));
+    }
 
     public static void hire(Scanner sc, Restaurant restaurant, boolean chef) {
         String name = ask(sc, chef ? "Chef name: " : "Waiter name: ");
+        boolean added = chef ? restaurant.chefNamesAdd(name) : restaurant.waiterNamesAdd(name);
+        if (!added) System.out.println( name + "' is already working here");
         if (name.isEmpty()) {
             System.out.println("Name cannot be empty");
             return;
@@ -192,7 +211,7 @@ public class Restaurant {
         return sc.nextLine().trim();
     }
 
-    public static void addOrder(Scanner sc, Restaurant restaurant) {
+    public static void addOrder(Scanner sc, Restaurant restaurant) throws InterruptedException {
         if (!restaurant.isOpen()){
             System.out.println("Restaurant is closed. Open it first (needs at least 1 chef and 1 waiter)." );
             return;
@@ -220,10 +239,15 @@ public class Restaurant {
             return;
         }
         Priority priority = ask(sc, "VIP? y/n" ).equalsIgnoreCase("y") ? Priority.VIP : Priority.NORMAL;
-
-        int orderId = restaurant.placeOrder(customerName, item, quantity, priority);
-        System.out.printf("Order-%d placed: %s x%d%s%n",
-                orderId, item.getLabel(), quantity, priority == Priority.VIP ? " [VIP]" : "");
+        OrderTicket orderTicket = restaurant.placeOrder(customerName, item, quantity, priority, false);
+        System.out.println("Order -  " + orderTicket.orderId() + "is sent to Kitchen");
+        orderTicket.thread.join(120000);
+        if (orderTicket.thread.isAlive()) {
+            System.out.println("Still in progress - back to menu . Process will be finishing in background");
+        }else {
+            System.out.println("Order - " + orderTicket.orderId() + " completed going back to main menu\n");
+        }
+        orderTicket.thread.sleep(150);
     }
 
     private static Integer parsePositive(String task, int max) {
@@ -235,7 +259,10 @@ public class Restaurant {
         }
     }
 
-    private int placeOrder(String customerName, MenuItems item, Integer quantity, Priority priority) {
+    public record OrderTicket(int orderId, Thread thread){
+    }
+
+    private synchronized OrderTicket placeOrder(String customerName, MenuItems item, Integer quantity, Priority priority ,boolean allowWhileClosed) {
         synchronized (this){
             if (status == Status.CLOSED){
                 throw new IllegalStateException("Restaurant is closed");
@@ -245,7 +272,7 @@ public class Restaurant {
             Thread t =  new Thread(customer, "Customer-" + orderId);
             customerThreads.add(t);
             t.start();
-            return orderId;
+            return new OrderTicket(orderId, t);
         }
     }
 }
