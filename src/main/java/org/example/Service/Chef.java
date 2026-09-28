@@ -39,22 +39,25 @@ public class Chef implements Runnable {
 
     private void prepare(Order order) throws InterruptedException {
         order.setStatus(OrderStatus.PREPARING);
-        boolean reserved = inventory.reserve(order.getItem(), order.getQuantity());
+        boolean reserved = inventory.reserveAll(order.getLines());
 
         String header = name + " picked " + order + order.vipTag() + System.lineSeparator()
-                + name + " checking inventory for " + order.getItem().getLabel() + " x" + order.getQuantity()
+                + name + " checking inventory for " + order.itemSummary()
                 + System.lineSeparator();
 
         if(!reserved){
+            // name the lines that failed, instead of just failing the whole order
+            String missing = String.join("; ", inventory.shortages(order.getLines()));
             order.setStatus(OrderStatus.OUT_OF_STOCK);
+            order.setStatusNote(missing);
             orderRepo.recordKitchen(order.getOrderId(), OrderStatus.OUT_OF_STOCK,name);
-            System.out.println(header + order + ": OUT_OF_STOCK");
+            System.out.println(header + order + ": OUT_OF_STOCK - " + missing);
             completedQueue.put(order);
             return;
         }
         orderRepo.recordKitchen(order.getOrderId(), OrderStatus.PREPARING,name);
         System.out.println(header + name + " preparing " + order);
-        Thread.sleep(order.getItem().getCookTimeS()*order.getQuantity());
+        Thread.sleep(order.cookTimeMs());
 
 
         order.setStatus(OrderStatus.READY);

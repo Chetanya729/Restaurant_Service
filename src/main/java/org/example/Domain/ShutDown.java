@@ -1,8 +1,11 @@
 package org.example.Domain;
+
+import java.util.Map;
+
 public class ShutDown extends Order{
 
     public ShutDown() {
-        super(Integer.MAX_VALUE, null, null, 0, Priority.NORMAL);
+        super(Integer.MAX_VALUE, Map.of(), null, Priority.NORMAL);
     }
 
 

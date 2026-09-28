@@ -41,7 +41,8 @@ public class Waiter implements Runnable{
             order.setStatus(OrderStatus.DELIVERED);
             System.out.println(name + " delivered " + order + " to " + customerId);
         }else {
-            System.out.println(name + " informed " + customerId + " that " + order + " is OUT_OF_STOCK");
+            String why = order.getStatusNote().isEmpty() ? "" : " (" + order.getStatusNote() + ")";
+            System.out.println(name + " informed " + customerId + " that " + order + " is OUT_OF_STOCK" + why);
         }
         orderRepo.recordService(order.getOrderId(),order.getStatus(),name);
         order.getCustomer().receivedOrder(order);

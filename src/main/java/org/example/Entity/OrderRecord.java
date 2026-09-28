@@ -17,9 +17,9 @@ public class OrderRecord {
     @Column(nullable = false)
     private String customerId;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private MenuItems item;
+    /** "Pizza x2, Sandwich x3" - a child table would be the next step */
+    @Column(nullable = false, length = 200)
+    private String items;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -42,7 +42,7 @@ public class OrderRecord {
     public OrderRecord(Order order) {
         this.orderId = order.getOrderId();
         this.customerId = order.getCustomer().getCustomerId();
-        this.item = order.getItem();
+        this.items = order.itemSummary();
         this.priority = order.getPriority();
         this.status = OrderStatus.PLACED;
         this.placedAt = Instant.now();
@@ -70,8 +70,8 @@ public class OrderRecord {
         return customerId;
     }
 
-    public MenuItems getItem() {
-        return item;
+    public String getItems() {
+        return items;
     }
 
     public Priority getPriority() {

@@ -22,10 +22,21 @@ dependencies {
     implementation(libs.org.hibernate.orm.hibernate.hikaricp)
     runtimeOnly(libs.com.h2database.h2)
     runtimeOnly(libs.org.slf4j.slf4j.simple)
+    compileOnly("org.projectlombok:lombok:1.18.48")
+    annotationProcessor("org.projectlombok:lombok:1.18.48")
+    testCompileOnly("org.projectlombok:lombok:1.18.48")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.48")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 application {
-    mainClass = "org.example.Main"
+    mainClass = "org.example.Restaurant"
+}
+
+// the menu reads from the console, so the run task needs the real stdin
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
 }
 
 tasks.register<JavaExec>("runHello") {
@@ -44,4 +55,8 @@ tasks.register<JavaExec>("runRaceDemo") {
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
