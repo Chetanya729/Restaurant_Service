@@ -140,6 +140,7 @@ public class Restaurant {
                 3) Add customer order
                 4) Open restaurant  5) Status
                 6) Close restaurant 7) Load customers from CSV
+                8) Sold items       9) Check inventory
                 0) Exit""");
                 switch (sc.nextLine().trim()) {
                     case "1" -> hire(sc, restaurant, true);
@@ -149,6 +150,8 @@ public class Restaurant {
                     case "5" -> restaurant.printStatus();
                     case "6" -> restaurant.close();
                     case "7" -> loadCustomersFromCsv(restaurant);
+                    case "8" -> restaurant.printSoldItems();
+                    case "9" -> restaurant.printInventory();
                     case "0" -> {restaurant.close() ; restaurant.abandonWaitingCustomers(); running = false;}
                     default -> System.out.println("Invalid input");
 
@@ -247,7 +250,6 @@ public class Restaurant {
             return;
         }
 
-        // one count per status, in lifecycle order
         StringBuilder counts = new StringBuilder();
         for (OrderStatus s : OrderStatus.values()) {
             long n = orders.stream().filter(o -> o.getStatus() == s).count();
@@ -267,6 +269,55 @@ public class Restaurant {
                     o.getChef() == null ? "-" : o.getChef(),
                     o.getWaiter() == null ? "-" : o.getWaiter(),
                     elapsed(o));
+        }
+    }
+
+    public void printSoldItems() {
+        Map<MenuItems, Integer> sold = inventory.soldSnapshot();
+
+        Map<MenuItems, CsvLoader.MenuRow> menu = Map.of();
+        String priceProblem = null;
+        try {
+            menu = CsvLoader.loadMenu(CsvLoader.MENU_FILE);
+        } catch (RuntimeException e) {
+            priceProblem = e.getMessage();
+        }
+
+        int totalUnits = 0;
+        long totalRevenue = 0;
+        System.out.printf("%nSOLD ITEMS%n  %-10s %6s %8s %10s%n", "Item", "Sold", "Price", "Revenue");
+        for (MenuItems item : MenuItems.values()) {
+            int units = sold.getOrDefault(item, 0);
+            CsvLoader.MenuRow row = menu.get(item);
+            totalUnits += units;
+
+            if (row == null) {
+                System.out.printf("  %-10s %6d %8s %10s%n", item.getLabel(), units, "-", "-");
+            } else {
+                long revenue = (long) row.price() * units;
+                totalRevenue += revenue;
+                System.out.printf("  %-10s %6d %8d %10d%n", item.getLabel(), units, row.price(), revenue);
+            }
+        }
+        System.out.println("  " + "-".repeat(38));
+        System.out.printf("  %-10s %6d %8s %10s%n", "TOTAL", totalUnits, "",
+                menu.isEmpty() ? "-" : String.valueOf(totalRevenue));
+
+        if (priceProblem != null) {
+            System.out.println("  (no prices: " + priceProblem + ")");
+        }
+        System.out.println("  Counts units cooked by chefs; out-of-stock orders count as nothing.");
+    }
+
+    public void printInventory() {
+        Map<MenuItems, Integer> remaining = inventory.stockSnapshot();
+
+        System.out.printf("%nINVENTORY%n  %-10s %7s %6s %10s  %s%n", "Item", "Start", "Used", "Remaining", "");
+        for (MenuItems item : MenuItems.values()) {
+            int left = remaining.getOrDefault(item, 0);
+            int start = inventory.getInitialStock(item);
+            String flag = left == 0 ? "OUT OF STOCK" : (left <= 2 ? "running low" : "");
+            System.out.printf("  %-10s %7d %6d %10d  %s%n", item.getLabel(), start, start - left, left, flag);
         }
     }
 

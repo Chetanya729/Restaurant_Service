@@ -1,18 +1,28 @@
 package org.example.Domain;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
 public class Inventory {
-    private final Map<MenuItems, Integer> stock = new HashMap<>();
+    private final Map<MenuItems, Integer> stock = new EnumMap<>(MenuItems.class);
+    /** what the kitchen opened with, so reports can show start vs remaining */
+    private final Map<MenuItems, Integer> initialStock = new EnumMap<>(MenuItems.class);
+    /** units actually taken by chefs; an OUT_OF_STOCK order takes nothing */
+    private final Map<MenuItems, Integer> sold = new EnumMap<>(MenuItems.class);
 
     public Inventory() {
         stock.put(MenuItems.PIZZA, 8);
         stock.put(MenuItems.BURGER, 3);
         stock.put(MenuItems.PASTA, 6);
         stock.put(MenuItems.SANDWICH, 2);
+
+        initialStock.putAll(stock);
+        for (MenuItems item : MenuItems.values()) {
+            sold.put(item, 0);
+        }
     }
 
     /**
@@ -42,7 +52,7 @@ public class Inventory {
             }
         }
         for (Map.Entry<MenuItems, Integer> line : lines.entrySet()) {
-            stock.put(line.getKey(), stock.get(line.getKey()) - line.getValue());
+            take(line.getKey(), line.getValue());
         }
         return true;
     }
@@ -50,14 +60,37 @@ public class Inventory {
     public synchronized boolean reserve(MenuItems Item, int quantity){
         int available = stock.get(Item);
         if(available>=quantity) {
-            stock.put(Item, available - quantity);
+            take(Item, quantity);
             return true;
         }
         return false;
     }
 
+    /** caller must hold the lock */
+    private void take(MenuItems item, int quantity) {
+        stock.put(item, stock.get(item) - quantity);
+        sold.merge(item, quantity, Integer::sum);
+    }
 
     public synchronized int getStock(MenuItems Item) {
         return stock.get(Item);
+    }
+
+    public synchronized int getInitialStock(MenuItems item) {
+        return initialStock.get(item);
+    }
+
+    public synchronized int getSold(MenuItems item) {
+        return sold.get(item);
+    }
+
+    /** Consistent snapshot of everything sold so far, safe to read outside the lock. */
+    public synchronized Map<MenuItems, Integer> soldSnapshot() {
+        return Collections.unmodifiableMap(new EnumMap<>(sold));
+    }
+
+    /** Consistent snapshot of remaining stock, safe to read outside the lock. */
+    public synchronized Map<MenuItems, Integer> stockSnapshot() {
+        return Collections.unmodifiableMap(new EnumMap<>(stock));
     }
 }
