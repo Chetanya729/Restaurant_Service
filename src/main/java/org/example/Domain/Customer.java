@@ -14,7 +14,6 @@ public class Customer implements Runnable{
     private final Priority priority;
     private final BlockingQueue<Order> queue;
 
-    // built (and saved to the database) by the caller before this thread starts
     private volatile Order order;
 
     private boolean delivered = false;
@@ -29,7 +28,6 @@ public class Customer implements Runnable{
         this.queue = queue;
     }
 
-    /** Creates this customer's order. Call it (and persist the order) before starting the thread. */
     public Order createOrder() {
         this.order = new Order(orderId, lines, this, priority);
         return order;

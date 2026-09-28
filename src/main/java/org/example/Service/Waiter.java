@@ -2,7 +2,6 @@ package org.example.Service;
 
 import org.example.Domain.Order;
 import org.example.Domain.OrderStatus;
-import org.example.Repository.OrderRepo;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -10,12 +9,12 @@ public class Waiter implements Runnable{
 
     private final String name;
     private final BlockingQueue<Order> completedQueue;
-    private final OrderRepo orderRepo;
+    private final OrderService orderService;
 
-    public Waiter(String name, BlockingQueue<Order> completedQueue, OrderRepo orderRepo) {
+    public Waiter(String name, BlockingQueue<Order> completedQueue, OrderService orderService) {
         this.name = name;
         this.completedQueue = completedQueue;
-        this.orderRepo = orderRepo;
+        this.orderService = orderService;
     }
 
     @Override
@@ -44,7 +43,7 @@ public class Waiter implements Runnable{
             String why = order.getStatusNote().isEmpty() ? "" : " (" + order.getStatusNote() + ")";
             System.out.println(name + " informed " + customerId + " that " + order + " is OUT_OF_STOCK" + why);
         }
-        orderRepo.recordService(order.getOrderId(),order.getStatus(),name);
+        orderService.recordService(order.getOrderId(),order.getStatus(),name);
         order.getCustomer().receivedOrder(order);
     }
 }

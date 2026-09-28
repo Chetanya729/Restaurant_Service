@@ -1,8 +1,6 @@
 package org.example;
 
-import jakarta.persistence.EntityManagerFactory;
-import org.example.Domain.Inventory;
-import org.example.Repository.OrderRepo;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,11 +15,7 @@ public class RestaurantApplication {
         SpringApplication.run(RestaurantApplication.class, args);
     }
     @Bean
-    CommandLineRunner menu(EntityManagerFactory entityManagerFactory) {
-        return args -> {
-            Scanner sc = new Scanner(System.in);
-            Restaurant restaurant = new Restaurant(new Inventory(), new OrderRepo(entityManagerFactory));
-            Restaurant.runMenu(sc, restaurant);
-        };
+    CommandLineRunner menu(Restaurant restaurant) {
+        return args -> Restaurant.runMenu(new Scanner(System.in), restaurant);
     }
 }

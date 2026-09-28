@@ -1,7 +1,6 @@
 package org.example.Entity;
 
 import jakarta.persistence.*;
-import org.example.Domain.MenuItems;
 import org.example.Domain.Order;
 import org.example.Domain.OrderStatus;
 import org.example.Domain.Priority;
@@ -16,8 +15,6 @@ public class OrderRecord {
     private int orderId;
     @Column(nullable = false)
     private String customerId;
-
-    /** "Pizza x2, Sandwich x3" - a child table would be the next step */
     @Column(nullable = false, length = 200)
     private String items;
 

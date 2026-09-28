@@ -3,7 +3,6 @@ package org.example.Service;
 import org.example.Domain.Inventory;
 import org.example.Domain.Order;
 import org.example.Domain.OrderStatus;
-import org.example.Repository.OrderRepo;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -12,14 +11,14 @@ public class Chef implements Runnable {
     private final BlockingQueue<Order> orderQueue;
     private final BlockingQueue<Order> completedQueue;
     private final Inventory inventory;
-    private final OrderRepo orderRepo;
+    private final OrderService orderService;
 
-    public Chef(String name, BlockingQueue<Order> orderQueue, BlockingQueue<Order> completedQueue, Inventory inventory, OrderRepo orderRepo) {
+    public Chef(String name, BlockingQueue<Order> orderQueue, BlockingQueue<Order> completedQueue, Inventory inventory, OrderService orderService) {
         this.name = name;
         this.orderQueue = orderQueue;
         this.completedQueue = completedQueue;
         this.inventory = inventory;
-        this.orderRepo = orderRepo;
+        this.orderService = orderService;
     }
     @Override
     public void run() {
@@ -46,22 +45,21 @@ public class Chef implements Runnable {
                 + System.lineSeparator();
 
         if(!reserved){
-            // name the lines that failed, instead of just failing the whole order
             String missing = String.join("; ", inventory.shortages(order.getLines()));
             order.setStatus(OrderStatus.OUT_OF_STOCK);
             order.setStatusNote(missing);
-            orderRepo.recordKitchen(order.getOrderId(), OrderStatus.OUT_OF_STOCK,name);
+            orderService.recordKitchen(order.getOrderId(), OrderStatus.OUT_OF_STOCK,name);
             System.out.println(header + order + ": OUT_OF_STOCK - " + missing);
             completedQueue.put(order);
             return;
         }
-        orderRepo.recordKitchen(order.getOrderId(), OrderStatus.PREPARING,name);
+        orderService.recordKitchen(order.getOrderId(), OrderStatus.PREPARING,name);
         System.out.println(header + name + " preparing " + order);
         Thread.sleep(order.cookTimeMs());
 
 
         order.setStatus(OrderStatus.READY);
-        orderRepo.recordKitchen(order.getOrderId(), OrderStatus.READY,name);
+        orderService.recordKitchen(order.getOrderId(), OrderStatus.READY,name);
         System.out.println(name + " completed " + order);
         completedQueue.put(order);
     }

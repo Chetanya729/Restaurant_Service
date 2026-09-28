@@ -1,12 +1,15 @@
 package org.example;
 
 import org.example.Domain.*;
-import org.example.Repository.OrderRepo;
+import org.example.Service.OrderService;
 import org.example.Service.Chef;
 import org.example.Service.Waiter;
 import org.example.Entity.OrderRecord;
 import org.example.io.CsvLoader;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -19,18 +22,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+@Component
 public class Restaurant {
 
-    public Restaurant(Inventory inventory, OrderRepo orderRepo) {
-        this(inventory, orderRepo,
+    @Autowired
+    public Restaurant(Inventory inventory, OrderService orderService) {
+        this(inventory, orderService,
                 new PriorityBlockingQueue<>(20,
                         Comparator.comparing(Order::getPriority).thenComparingInt(Order::getOrderId)),
                 new LinkedBlockingQueue<>());
     }
 
-    public Restaurant(Inventory inventory, OrderRepo orderRepo, BlockingQueue<Order> orderQueue, BlockingQueue<Order> completedOrderQueue) {
+    public Restaurant(Inventory inventory, OrderService orderService, BlockingQueue<Order> orderQueue, BlockingQueue<Order> completedOrderQueue) {
         this.inventory = inventory;
-        this.orderRepo = orderRepo;
+        this.orderService = orderService;
         this.orderQueue = orderQueue;
         this.completedOrderQueue = completedOrderQueue;
     }
@@ -44,7 +49,7 @@ public class Restaurant {
     private Status status = Status.CLOSED;
 
     private final Inventory inventory;
-    private final OrderRepo orderRepo;
+    private final OrderService orderService;
     private final BlockingQueue<Order> orderQueue;
     private final BlockingQueue<Order> completedOrderQueue ;
 
@@ -114,10 +119,10 @@ public class Restaurant {
         service = Executors.newFixedThreadPool(waiterNames.size());
 
         for (String name : chefNames) {
-            kitchen.execute(new Chef(name, orderQueue, completedOrderQueue, inventory, orderRepo ));
+            kitchen.execute(new Chef(name, orderQueue, completedOrderQueue, inventory, orderService ));
         }
         for(String name : waiterNames){
-            service.execute(new Waiter(name,completedOrderQueue, orderRepo ));
+            service.execute(new Waiter(name,completedOrderQueue, orderService ));
         }
         status = Status.OPEN;
         System.out.println("Restaurant is OPEN with " + chefNames.size() + " chefs and " + waiterNames.size() + " waiters.");
@@ -229,7 +234,7 @@ public class Restaurant {
 
         List<OrderRecord> orders;
         try {
-            orders = orderRepo.findAll();
+            orders = orderService.findAll();
         } catch (RuntimeException e) {
             System.out.println("Could not read orders: " + e.getMessage());
             return;
@@ -239,7 +244,6 @@ public class Restaurant {
             return;
         }
 
-        // one count per status, in lifecycle order
         StringBuilder counts = new StringBuilder();
         for (OrderStatus s : OrderStatus.values()) {
             long n = orders.stream().filter(o -> o.getStatus() == s).count();
@@ -309,6 +313,13 @@ public class Restaurant {
         status = Status.CLOSED;
         System.out.println("Restaurant is CLOSED.");
     }
+
+    @PreDestroy
+    void shutdown() throws InterruptedException {
+        close();
+        abandonWaitingCustomers();
+    }
+
     public static String ask(Scanner sc, String prompt) {
         System.out.println(prompt);
         return sc.nextLine().trim();
@@ -415,7 +426,7 @@ public class Restaurant {
             int orderId = nextOrderId.getAndIncrement();
             Customer customer = new Customer(customerName, orderId, priority, lines, orderQueue);
 
-            orderRepo.save(customer.createOrder());
+            orderService.save(customer.createOrder());
 
             Thread t =  new Thread(customer, "Customer-" + orderId);
             customerThreads.add(t);
