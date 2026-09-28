@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: restaurant-service
+
+  main:
+    banner-mode: off
+
+  datasource:
+    url: jdbc:h2:./data/restaurant;AUTO_SERVER=TRUE
+    username: sa
+    password: ""
+    hikari:
+      maximum-pool-size: 15
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+    open-in-view: false
+
+logging:
+  level:
+    root: WARN
+    org.example: INFO

@@ -1,8 +1,6 @@
 package org.example;
 
-import jakarta.persistence.EntityManagerFactory;
 import org.example.Domain.*;
-import org.example.Repository.Database;
 import org.example.Repository.OrderRepo;
 import org.example.Service.Chef;
 import org.example.Service.Waiter;
