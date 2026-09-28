@@ -1,8 +1,0 @@
-# Restaurant menu
-# name must match a constant in org.example.Domain.MenuItems
-# cookTimeMs is per single item; price is in rupees
-name,label,cookTimeMs,price
-PIZZA,Pizza,3000,250
-BURGER,Burger,2000,120
-PASTA,Pasta,2500,180
-SANDWICH,Sandwich,1500,90
