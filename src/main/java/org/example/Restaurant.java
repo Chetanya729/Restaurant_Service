@@ -125,12 +125,8 @@ public class Restaurant {
         System.out.println("Restaurant is OPEN with " + chefNames.size() + " chefs and " + waiterNames.size() + " waiters.");
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        EntityManagerFactory emf = Database.open();
-        Scanner sc  = new Scanner(System.in);
-        Restaurant restaurant = new Restaurant(new Inventory(), new OrderRepo(emf));
-        AtomicInteger counter = new AtomicInteger(0);
-        try {
+    public static void runMenu(Scanner sc, Restaurant restaurant) throws InterruptedException {
+        {
             boolean running = true;
             while(running){
                 System.out.println("""
@@ -154,8 +150,6 @@ public class Restaurant {
 
                 }
             }
-        }finally {
-            emf.close();
         }
     }
     public synchronized boolean isTaken(String name){

@@ -1,6 +1,9 @@
+import org.springframework.boot.gradle.tasks.run.BootRun
+
 plugins {
     java
-    application            // ← adds the `run` task
+    id("org.springframework.boot") version "4.1.1"
+    id("io.spring.dependency-management") version "1.1.7"
 }
 
 group = "org.example"
@@ -9,7 +12,7 @@ description = "Restaurant_Service"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)    // ← replaces sourceCompatibility = VERSION_1_8
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -18,32 +21,22 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.org.hibernate.hibernate.core)
-    implementation(libs.org.hibernate.orm.hibernate.hikaricp)
-    runtimeOnly(libs.com.h2database.h2)
-    runtimeOnly(libs.org.slf4j.slf4j.simple)
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    runtimeOnly("com.h2database:h2")
     compileOnly("org.projectlombok:lombok:1.18.48")
     annotationProcessor("org.projectlombok:lombok:1.18.48")
     testCompileOnly("org.projectlombok:lombok:1.18.48")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.48")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-application {
-    mainClass = "org.example.Restaurant"
+springBoot {
+    mainClass = "org.example.RestaurantApplication"
 }
 
-// the menu reads from the console, so the run task needs the real stdin
-tasks.named<JavaExec>("run") {
+tasks.named<BootRun>("bootRun") {
     standardInput = System.`in`
-}
-
-tasks.register<JavaExec>("runHello") {
-    group = "application"
-    description = "Runs the HelloHibernate CRUD demo"
-    mainClass = "org.example.HelloHibernate"
-    classpath = sourceSets["main"].runtimeClasspath
 }
 
 tasks.register<JavaExec>("runRaceDemo") {
