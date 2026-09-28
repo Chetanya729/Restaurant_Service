@@ -1,0 +1,13 @@
+# Sample customers for the batch demo
+# customer,item,quantity,priority   (priority: VIP or NORMAL)
+customer,item,quantity,priority
+Customer-1,PIZZA,2,NORMAL
+Customer-2,BURGER,1,VIP
+Customer-3,PASTA,2,NORMAL
+Customer-4,PIZZA,1,VIP
+Customer-5,SANDWICH,2,NORMAL
+Customer-6,BURGER,3,NORMAL
+Customer-7,PASTA,2,VIP
+Customer-8,PIZZA,2,NORMAL
+Customer-9,SANDWICH,1,NORMAL
+Customer-10,BURGER,2,VIP
